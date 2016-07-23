@@ -42,6 +42,12 @@ TH_API void THNN_(ClassNLLCriterion_updateGradInput)(
           THTensor *weights,           // [OPTIONAL] class weights
           THTensor *total_weight);     // [BUFFER]
 
+TH_API void THNN_(CriterionFilter_updateGradInput)(
+          THNNState *state,
+          THIndexTensor *target,
+          THTensor *gradInput,
+          THIndexTensor *ignored_label);
+
 TH_API void THNN_(SpatialClassNLLCriterion_updateOutput)(
           THNNState *state,            // library's state
           THTensor *input,             // input tensor (4D)
