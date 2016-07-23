@@ -1,7 +1,6 @@
-local CriterionFilter = torch.class('nn.CriterionFilter', 'nn.Criterion')
+local CriterionFilter = torch.class('nn.CriterionFilter')
 
 function CriterionFilter:__init(criterion, ignored_label)
-  parent.__init(self)
   self.target = torch.zeros(1):long()
   self.criterion = torch.zeros(1):long()
   assert(ignored_label, 'No ignored label provided')
