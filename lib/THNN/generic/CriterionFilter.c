@@ -9,7 +9,7 @@ void THNN_(CriterionFilter_updateGradInput)(
           THTensor *gradInput,
           THIndexTensor *ignored_label)
 {
-  int n_dims = THTensor_(nDimension)(target);
+  int n_dims = THIndexTensor_(nDimension)(target);
 
   gradInput = THTensor_(newContiguous)(gradInput);
   target = THIndexTensor_(newContiguous)(target);
@@ -22,45 +22,45 @@ void THNN_(CriterionFilter_updateGradInput)(
   int i;
   int ignored_label_num = ignored_label_data[0];
   if (n_dims == 1) {
-    int batch_size = THTensor_(size)(target, 0);
+    int batch_size = THIndexTensor_(size)(target, 0);
     int n_classes = THTensor_(size)(gradInput, 1);
     for (i = 0; i < batch_size; i++) {
       int j;
-      if (target[i] == ignored_label_num) {
-        for (j = 0; j < n_classes; j++) gradInput[(i * nClass) + j] = 0;
+      if (target_data[i] == ignored_label_num) {
+        for (j = 0; j < n_classes; j++) gradInput_data[(i * n_classes) + j] = 0;
       }
     }
   } else if (n_dims == 2) {
-    int H = THTensor_(size)(target, 0);
-    int W = THTensor_(size)(target, 1);
+    int H = THIndexTensor_(size)(target, 0);
+    int W = THIndexTensor_(size)(target, 1);
     int n_classes = THTensor_(size)(gradInput, 1);
     #pragma omp parallel for
     for (i = 0; i < H; i++) {
       int j;
       for (j = 0; j < W; j++) {
-        if (target[(i * W) + j] == ignored_label_num) {
+        if (target_data[(i * W) + j] == ignored_label_num) {
           int l;
           for (l = 0; l < n_classes; l++) {
-            gradInput[(l * W * H) + (i * W) + j] = 0;
+            gradInput_data[(l * W * H) + (i * W) + j] = 0;
           }
         }
       }
     }
   } else if (n_dims == 3) {
-    int batch_size = THTensor_(size)(target, 0);
-    int H = THTensor_(size)(target, 1);
-    int W = THTensor_(size)(target, 2);
-    int n_classes = THTensor_(size)(target, 1);
+    int batch_size = THIndexTensor_(size)(target, 0);
+    int H = THIndexTensor_(size)(target, 1);
+    int W = THIndexTensor_(size)(target, 2);
+    int n_classes = THIndexTensor_(size)(target, 1);
     #pragma omp parallel for
     for (i = 0; i < batch_size; i++) {
       int j;
       for (j = 0; j < H; j++) {
         int l;
         for (l = 0; l < W; l++) {
-          if (target[(i * H * W) + (j * W) + l] == ignored_label_num) {
+          if (target_data[(i * H * W) + (j * W) + l] == ignored_label_num) {
             int o;
             for (o = 0; o < n_classes; o++) {
-              gradInput[(i * n_classes * H * W) + ( o * H * W) + (j * W) + l] = 0
+              gradInput_data[(i * n_classes * H * W) + ( o * H * W) + (j * W) + l] = 0;
             }
           }
         }
@@ -68,3 +68,4 @@ void THNN_(CriterionFilter_updateGradInput)(
     }
   } else {THError("Target tensor should be 1D~3D tensor!");}
 }
+#endif

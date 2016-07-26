@@ -2,7 +2,7 @@ local CriterionFilter = torch.class('nn.CriterionFilter')
 
 function CriterionFilter:__init(criterion, ignored_label)
   self.target = torch.zeros(1):long()
-  self.criterion = torch.zeros(1):long()
+  self.criterion = {}
   assert(ignored_label, 'No ignored label provided')
   self.ignored_label = ignored_label
   assert(criterion, 'No criterion provided')
