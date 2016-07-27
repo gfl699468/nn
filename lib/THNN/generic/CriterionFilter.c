@@ -50,7 +50,7 @@ void THNN_(CriterionFilter_updateGradInput)(
     int batch_size = THIndexTensor_(size)(target, 0);
     int H = THIndexTensor_(size)(target, 1);
     int W = THIndexTensor_(size)(target, 2);
-    int n_classes = THIndexTensor_(size)(target, 1);
+    int n_classes = THTensor_(size)(gradInput, 1);
     #pragma omp parallel for
     for (i = 0; i < batch_size; i++) {
       int j;
