@@ -3,6 +3,56 @@
 #else
 //TODO: ANY better way to fill 0 in gradInput instead of nested for loop?
 
+void THNN_(CriterionFilter_updataOutput)(
+          THNNState *state,
+          THIndexTensor *target,
+          THTensor *input,
+          THIndexTensor *ignored_label)
+{
+  int n_dims = THIndexTensor_(nDimension)(target);
+  int bound = THTensor_(size)(input, 1);
+  target = THIndexTensor_(newContiguous)(target);
+  ignored_label = THIndexTensor_(newContiguous)(ignored_label);
+
+  THIndex_t *target_data = THIndexTensor_(data)(target);
+  THIndex_t *ignored_label_data = THIndexTensor_(data)(target);
+
+  int i;
+  int ignored_label_num = ignored_label_data[0];
+  if (n_dims == 1) {
+    int batch_size = THIndexTensor_(size)(target, 0);
+    for (i = 0; i < batch_size; i++) {
+      target[i] = bound + 1;
+    }
+  } else if (n_dims == 2) {
+    int H = THIndexTensor_(size)(target, 0);
+    int W = THIndexTensor_(size)(target, 1);
+    #pragma omp parallel for
+    for (i = 0; i < H; i++) {
+      int j;
+      for (j = 0; j < W; j++) {
+        target[W * i + j] = bound + 1;
+      }
+    }
+  } else if (n_dims == 3) {
+    int batch_size = THIndexTensor_(size)(target, 0);
+    int H = THIndexTensor_(size)(target, 1);
+    int W = THIndexTensor_(size)(target, 2);
+    int n_classes = THTensor_(size)(gradInput, 1);
+    #pragma omp parallel for
+    for (i = 0; i < batch_size; i++) {
+      int j;
+      for (j = 0; j < H; j++) {
+        int l;
+        for (l = 0; l < W; l++) {
+          target[H * W * i + j * W + l] = bound + 1;
+        }
+      }
+    }
+  } else {THError("Target tensor should be 1D~3D tensor!");}
+
+}
+
 void THNN_(CriterionFilter_updateGradInput)(
           THNNState *state,
           THIndexTensor *target,
